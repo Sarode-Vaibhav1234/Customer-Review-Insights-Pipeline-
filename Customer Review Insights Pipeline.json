@@ -1,0 +1,524 @@
+{
+  "name": "Customer Review Insights Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1nyMXYoMYMJlVHdRWEUsn-vOGNRE92A0hhfttqsp_QGE",
+          "mode": "list",
+          "cachedResultName": "CustomerReviewFormRes_n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nyMXYoMYMJlVHdRWEUsn-vOGNRE92A0hhfttqsp_QGE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nyMXYoMYMJlVHdRWEUsn-vOGNRE92A0hhfttqsp_QGE/edit#gid=0"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f6ece111-dbf2-4157-b8aa-80b31617310b",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "uDc3eGkRbK0cO7Ns",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Summarize the customer's product review below in 1-2 sentences. Return only the summary text.\nReview:  {{ $json.Feedback }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{ $json.Feedback }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6917a315-7127-4429-84c5-05f7c7abba92",
+      "name": "Basic LLM Chain",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        144,
+        208
+      ],
+      "id": "71ae0b7a-40c7-48bc-b40c-7fbe8c7a8350",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "r1m62Or8750yoSP3",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        496,
+        208
+      ],
+      "id": "aa4f59e1-6a7b-4c19-bca9-c5758547ed14",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TutxZksYRO3NHqv4",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        816,
+        160
+      ],
+      "id": "2fab50df-2736-4b01-8400-f737c910e56d",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "r1m62Or8750yoSP3",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1nyMXYoMYMJlVHdRWEUsn-vOGNRE92A0hhfttqsp_QGE",
+          "mode": "list",
+          "cachedResultName": "CustomerReviewFormRes_n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nyMXYoMYMJlVHdRWEUsn-vOGNRE92A0hhfttqsp_QGE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1839250119,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nyMXYoMYMJlVHdRWEUsn-vOGNRE92A0hhfttqsp_QGE/edit#gid=1839250119"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product Name ": "={{ $('Google Sheets Trigger').item.json['Product Name'] }}",
+            "Product Review": "={{ $('Google Sheets Trigger').item.json.Feedback }}",
+            "Summary": "={{ $('Basic LLM Chain').item.json.text }}",
+            "Sentiment & score": "={{ $('Sentiment Analysis1').item.json.text }}",
+            "Tone & Score": "={{ $json.text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Product Name ",
+              "displayName": "Product Name ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Product Review",
+              "displayName": "Product Review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sentiment & score",
+              "displayName": "Sentiment & score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tone & Score",
+              "displayName": "Tone & Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        -48
+      ],
+      "id": "4effdcd7-01a2-4148-af9e-b637c8bd10a3",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "R7ggwakt1cKWXtN2",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7e9c087d-fcc0-4ff7-bb27-4be84695c9d3",
+              "leftValue": "={{ $('Sentiment Analysis1').item.json.text }}",
+              "rightValue": "Negative",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": "={{ true }}"
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1488,
+        -32
+      ],
+      "id": "74624852-1456-4ee9-a6b1-4a5db0493a46",
+      "name": "If",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "sendTo": "sarodevaibhav90@gmail.com",
+        "subject": "Negative Review",
+        "message": "=Product Name:  {{ $('Google Sheets Trigger').item.json['Product Name'] }}\nSummary: {{ $('Basic LLM Chain').item.json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1744,
+        -128
+      ],
+      "id": "ab310318-f8ce-452d-ab59-24773b2db301",
+      "name": "Send a message",
+      "webhookId": "9947e7ad-581c-4137-b82a-26c412283338",
+      "executeOnce": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "D7dqitfnHH7vBhYW",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Identify the sentiment of the product review as Positive, Neutral, or Negative. Return in this format only: Sentiment: <Positive/Negative/Neutral> | Score: <0-1> Review: {{ $('Google Sheets Trigger').item.json.Feedback }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "={{$json[\"prompt\"]}}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        592,
+        0
+      ],
+      "id": "b3c7e993-3b14-491c-b621-30bde21f7abb",
+      "name": "Sentiment Analysis1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Identify the sentiment of the product review as Positive, Neutral, or Negative. Return in this format only: Sentiment: <Positive/Negative/Neutral> | Score: <0-1> Review: {{ $('Google Sheets Trigger').item.json.Feedback }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        880,
+        -48
+      ],
+      "id": "e8c071cc-2dc0-4812-8d87-aabf2ef93e1d",
+      "name": "Summary Tone Classification"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        208
+      ],
+      "id": "def41a57-7581-48c7-a01e-5f4e43d27c49",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "8BhFdk96ETmdwvS8",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        656,
+        208
+      ],
+      "id": "fbfaea50-0039-4d8c-9c56-2aa75bc07202",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "8BhFdk96ETmdwvS8",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        976,
+        160
+      ],
+      "id": "50366fdb-8a26-4997-8b2f-8e967195a4c6",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "8BhFdk96ETmdwvS8",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiment Analysis1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summary Tone Classification",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Sentiment Analysis1": {
+      "main": [
+        [
+          {
+            "node": "Summary Tone Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary Tone Classification": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "337bfd62-e396-405b-a488-cfa3af70ac3a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ecdf40a24af1f54782b52c09b2e53e90a8d93a47f4510c541b04c03c69c09ede"
+  },
+  "id": "IDqrw2jE78g0FHVR",
+  "tags": []
+}
